@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>我的导航 _task 17</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header></header>
+    <main >
+        <div id="mainxxx" class="wrapper"></div>
+    </main>
+    <footer></footer>
+
+
+    <script>
+        //1.初始化 kyes(键盘上26个字母) hash（键盘对应的网址） 
+        var hashA=init();
+        var keys=hashA['keys'];
+        var hash=hashA['hash'];
+
+        // 2. 生成键盘
+        // 遍历 keys，生成 kbd 标签
+        createKeyboard(keys, hash)
+
+        // 3. 监听用户动作
+        listenToUser(hash)
+      
+
+
+
+// 下面是工具函数
+       //创建元素
+        function createTag(tagName){
+            return document.createElement(tagName)
+        }
+        //遍历生成keyboard
+        function createKeyboard(keys, hash){
+            for(var index=0;index<keys['length'];index++){
+                var div=createTag('div')
+                div.className='row'
+                mainxxx.appendChild(div)
+
+                //第一组字母qwerty.. 第二组字母asdf,, 第三组zxcv..
+                var row = keys[index]  
+
+            //循环加入kbd到其父元素div中 并输入26个字母
+                for(var index2 =0;index2<row['length'];index2++){
+                    //createElement()创建新标签方法
+                    var kbd=createTag('kbd')
+                    kbd.className='key'
+                    //创建span标签  textContent设置节点文本内容 并输入26个字母
+                    var span = createSpan(row[index2])
+
+                    //创建img标签
+                    var imgs=createImg(hash[row[index2]]);
+                    
+                    //创建button
+                    var button =createButton(row[index2]);
+                    //点击编辑按钮时触发
+                    
+
+                    //在kbd标签内加入 button标签 img标签 appendChild()方法
+                    kbd.appendChild(span)
+                    kbd.appendChild(imgs)
+                    kbd.appendChild(button)
+                    //在div标签内加入 kbd标签
+                    div.appendChild(kbd)
+                   
+                    
+                }
+
+            }
+
+        }
+
+
+         //初始化封装函数
+        function init(){
+              //div 个数
+            var keys = {
+                '0': {0:'q',1:'w',2:'e',3:'r',4:'t',5:'y',6:'u',7:'i',8:'o',9:'p',length:10},
+                '1': {0:'a',1:'s',2:'d',3:'f',4:'g',5:'h',6:'j',7:'k',8:'l',length:9},
+                '2': {0:'z',1:'x',2:'c',3:'v',4:'b',5:'n',6:'m',length:7},
+                'length': 3
+            }
+            //键盘上的26个字母
+            var hash = {'q': 'qq.com', 'w': 'weibo.com', 'e': 'ele.me', 'r': 'renren.com', 't': 'tianya.com', 'y': 'youtube.com', 'u': 'uc.com' , 'i': 'iqiyi.com', 'o': 'opera.com', 'p': undefined, 'a': 'acfun.tv', 's': 'sohu.com', 'z': 'zhihu.com', 'm': 'www.mcdonalds.com.cn'
+            }
+            // 取出 localStorage 中的 website 对应的 hash
+            var hashInLocalStorage = getFromLocalStorage('newsite')
+            if(hashInLocalStorage){
+                //新hash覆盖旧hash
+                hash = hashInLocalStorage
+            }
+
+            return {
+                "keys": keys,
+                "hash": hash
+            }
+        }
+
+        //取出 localStorage中的name 对应的hash 封装函数
+        function getFromLocalStorage(name){
+             
+            return JSON.parse(localStorage.getItem(name) || 'null')
+             
+        }
+        //创建span元素 封装函数
+        function createSpan(textContent){
+            var span=createTag('span');
+            span.textContent=textContent;
+            return span
+        }
+        //创建img 并设置favicon图标 封装函数
+        function createImg(domain){
+            var imgs=createTag('img')
+            if(domain){
+                imgs.src='http://'+domain+'/favicon.ico'
+            }else{
+                imgs.src='https://i.loli.net/2017/11/10/5a05afbc5e183.png'
+            }
+            //图片加载错误触发
+            imgs.onerror=function(e){
+                e.target.src='https://i.loli.net/2017/11/10/5a05afbc5e183.png'
+            }
+            return imgs
+        }
+
+        //创建buttton 如若输入新网址覆盖旧的
+        function createButton(id){
+            var button=createTag('button')
+                button.textContent='编辑'
+                button.id=id
+            button.onclick=function(x){
+                //用户点击对应的button
+                var button2 = x['target']
+                //previousSibling 上一个元素 
+                var img2 = button2.previousSibling
+                var key=button2.id
+                
+                //prompt显示可提示用户进行输入的对话框
+                var buttonUrl=prompt('输入你的网址')
+
+                //把用户输入网址 赋值到对应hash中
+                hash[key]=buttonUrl
+
+                img2.src='http://'+buttonUrl+'/favicon.ico'
+                img2.onerror=function(e){
+                    e.target.src='https://i.loli.net/2017/11/10/5a05afbc5e183.png'
+                }
+                
+              //只要hash变了  就存到newsite桶中 ,利用浏览器存储
+                localStorage.setItem('newsite',JSON.stringify(hash))
+            }
+            return button
+        }
+
+        //页面document 在键盘输入动作发生时触发onkeypress=funcon(){}
+        function listenToUser(hash){
+            document.onkeypress=function(e){
+                //获取键入的字母（key）
+                var key=e['key']//q w e
+                //获取键入字母在hash数组中所设置的对应的网址，并存放进容器website
+                var website=hash[key]  //qq.com
+                //新窗口打开页面 window.open()打开页面
+                window.open('http://'+website,'_blank')
+            }
+        }
+        
+
+        
+
+    </script>
+</body>
+</html>
